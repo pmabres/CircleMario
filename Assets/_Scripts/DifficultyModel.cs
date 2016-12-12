@@ -6,5 +6,8 @@ public class DifficultyModel
 {
     public float LevelCoinMultiplier;
     public float FireIntensityMultiplier;
+    public float MushroomChance;
+    public float PowChance;
+    public float EnemyChance;
 }
 

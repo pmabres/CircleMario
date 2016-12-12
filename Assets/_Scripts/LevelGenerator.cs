@@ -6,15 +6,33 @@ public class LevelGenerator : MonoBehaviour {
     public GameObject prefabFloor;
     public Transform parentTransform;
     public DifficultyHelper DifficultyHelper;
+    public GameObject mushRoomPrefab;
+    public GameObject powPrefab;
+    public GameObject enemyPrefab;
+ 
     private GameManager.GameState _lastGameState;
+
     private void GenerateLevel()
     {
+        DestroyPowerUpsAndEnemies();
+        SpawnPowerUps();
+        SpawnEnemy();
         GenerateCircle(prefabDiamantes, 2f, DifficultyHelper.GetTotalSpawnedCoins(), 0);
     }
 
     private void GenerateFloor()
     {
         GenerateCircle(prefabFloor, 1.6f, 36, 90);
+    }
+
+    private void DestroyPowerUpsAndEnemies()
+    {
+        var enemy = GameObject.Find("enemy(Clone)");
+        var hongo = GameObject.Find("hongo(Clone)");
+        var pow = GameObject.Find("pow(Clone)");
+        if (enemy != null) Destroy(enemy);
+        if (hongo != null) Destroy(hongo);
+        if (pow != null) Destroy(pow);
     }
 
     // Use this for initialization
@@ -25,6 +43,25 @@ public class LevelGenerator : MonoBehaviour {
         GameManager.GameStateChanged += OnGameStateChanged;
         GenerateLevel();
         GenerateFloor();
+    }
+
+    void SpawnPowerUps()
+    {
+        SpawnByChance(mushRoomPrefab, DifficultyHelper.GetMushroomChance());
+        SpawnByChance(powPrefab, DifficultyHelper.GetPowChance());
+    }
+
+    void SpawnEnemy()
+    {
+        SpawnByChance(enemyPrefab, DifficultyHelper.GetEnemyChance());
+    }
+
+    void SpawnByChance(GameObject prefab, float chance)
+    {
+        if (Random.value < chance)
+        {
+            GenerateCircle(prefab, 2f, 36, 0, Random.value);
+        }
     }
 
     private void OnDestroy()
@@ -41,11 +78,21 @@ public class LevelGenerator : MonoBehaviour {
         _lastGameState = state;
     }
 
-    void GenerateCircle(GameObject gameObject, float radio, int amount, int correccionAngulo)
+    void GenerateCircle(GameObject gameObject, float radio, int amount, float correccionAngulo)
+    {
+        GenerateCircle(gameObject, radio, amount, correccionAngulo, 0);
+    }
+
+    void GenerateCircle(GameObject gameObject, float radio, int amount, float correccionAngulo, float randomPosition)
     {
         float separacion = 360f / amount;
-
-        for (int i = 0; i < amount; i++)
+        int i = 0;
+        if (randomPosition > 0)
+        {
+            i = Mathf.FloorToInt(randomPosition*amount);
+            amount = i+1;
+        }
+        for (; i < amount; i++)
         {
             float angulo = i * separacion;
             Vector3 pos = ByCircle(this.transform.position, radio, correccionAngulo - angulo);
